@@ -1,4 +1,5 @@
 import { Response } from "express"
+import { ValidationError } from "../validators/types/validators.type"
 
 const response = {
     
@@ -18,7 +19,7 @@ const response = {
         })
     },
 
-    errorValidation(res: Response, errors: any){
+    errorValidation(res: Response, errors: ValidationError[]){
         res.status(422).send({
             message: "Verifique la información suministrada",
             errors

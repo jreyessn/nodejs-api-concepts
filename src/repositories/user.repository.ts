@@ -17,8 +17,17 @@ export default class UserRepository extends BaseRepository {
      * @param value Value
      * @returns 
      */
-     exist(field: string, value: string){
+    exist(field: string, value: string){
         return this.model.findOne({ [field]: { $regex: '.*' + value + '.*', $options: 'i' } })
+    }
+
+    /**
+     * Buscar usuario por el email
+     * 
+     * @param email email
+     */
+    findEmail(email: string){
+        return this.model.findOne({ email }).select("_id name email role password")
     }
 
 }

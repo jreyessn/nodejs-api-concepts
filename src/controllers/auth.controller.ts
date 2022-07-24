@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { matchedData } from "express-validator";
 import UserRepository from "../repositories/user.repository";
 import { tokenSign } from "../utils/jwt";
-import { hashPassword } from "../utils/password";
+import { comparePassword, hashPassword } from "../utils/password";
 import response from "../utils/responses-http";
 
 const userRepository = new UserRepository;
@@ -20,9 +20,23 @@ class AuthController {
      */
     async signIn(req: Request, res: Response): Promise<void>{
         try {
-            const data = await userRepository.first(req.params["id"])
+            const body         = matchedData(req) 
+            const user         = await userRepository.findEmail(body.email)
+            const hashPassword = comparePassword(String(body.password), String(user?.password))
             
-            if(!data) throw("Not found")
+            if(!user || !hashPassword){
+                return response.errorValidation(res, [{
+                    value: body.email,
+                    msg:   "Las credenciales son invalidas"
+                }])
+            }
+            
+            user.set("password", undefined, { strict: false })
+
+            const data = {
+                token: await tokenSign(user),
+                user
+            }
 
             response.success(res, { data })
         } catch (error) {
@@ -40,17 +54,16 @@ class AuthController {
         try {
             const password = hashPassword(req.body['password']) 
             const body     = { ...matchedData(req),  password }
-            const data     = await userRepository.create(body)
-            const token    = await tokenSign(data)
+            const user     = await userRepository.create(body)
 
-            data.set('password', undefined, { strict: false })
+            user.set('password', undefined, { strict: false })
 
-            response.success(res, { 
-                data: {
-                    user: data,
-                    token
-                },
-             }, 201)
+            const data = {
+                user,
+                token: await tokenSign(user)
+            }
+
+            response.success(res, { data }, 201)
         } catch (error) {
             response.error(res, error)
         }
