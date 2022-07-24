@@ -1,4 +1,6 @@
 import mongoose, { SchemaOptions } from 'mongoose';
+import MongooseDelete from 'mongoose-delete';
+
 
 const collectionName = "tracks";
 
@@ -32,5 +34,7 @@ const TrackScheme = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId
     }
 }, schemaOptions)
+
+TrackScheme.plugin(MongooseDelete, { overrideMethods: "all" })
 
 export default mongoose.model(collectionName, TrackScheme)

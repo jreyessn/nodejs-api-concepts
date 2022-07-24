@@ -44,7 +44,7 @@ export default class BaseRepository {
      * @returns 
      */
     destroy(id: number | string){
-        return this.model.findByIdAndDelete(id)
+        return this.model.delete({ _id: id })
     }
     
 }

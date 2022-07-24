@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import { StorageConfig } from "../config/storage.config";
 import StorageRepository from "../repositories/storage.repository";
-import { multerSingle } from "../utils/storage";
+import response from "../utils/responses-http";
+import { unlinkStorage } from "../utils/storage";
 
 const storageRepository = new StorageRepository;
 
@@ -19,7 +20,7 @@ class StorageController {
     async index(req: Request, res: Response){
         const data = await storageRepository.paginate()
 
-        res.json({ data })
+        response.success(res, { data })
     }
 
     /**
@@ -28,9 +29,16 @@ class StorageController {
      * @param {Request} req Request express
      * @param {Response} res Response express
      */
-    show(req: Request, res: Response){
+    async show(req: Request, res: Response){
+        try {
+            const data = await storageRepository.first(req.params["id"])
+            
+            if(!data) throw("Not found")
 
-        res.json({message: "Shosito"})
+            response.success(res, { data })
+        } catch (error) {
+            response.notFound(res)
+        }
     }
 
     /**
@@ -48,23 +56,12 @@ class StorageController {
                 url: `${StorageConfig.link_public}${file?.filename}`
             }
 
-            const store = await storageRepository.create(filedata)
+            const data = await storageRepository.create(filedata)
             
-            res.status(201).json({ data: store })
+            response.success(res, { data }, 201)
         } catch (error) {
-            // save error log
-            res.status(500).json(error)
+            response.error(res, error)
         }
-    }
-
-    /**
-     * Actualizar recursos
-     * 
-     * @param {Request} req Request express
-     * @param {Response} res Response express
-     */
-    update(req: Request, res: Response){
-
     }
 
     /**
@@ -73,8 +70,20 @@ class StorageController {
      * @param {Request} req Request express
      * @param {Response} res Response express
      */
-    destroy(req: Request, res: Response){
-        
+    async destroy(req: Request, res: Response){
+        try {
+            const item = await storageRepository.first(req.params["id"])
+            
+            if(!item) throw("Not found")
+            
+            await storageRepository.destroy(req.params["id"])
+
+            unlinkStorage(item.filename)
+
+            response.notContent(res)
+        } catch (error) {
+            response.notFound(res)
+        }
     }
 
 }
