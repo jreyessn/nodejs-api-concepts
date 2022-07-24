@@ -11,4 +11,14 @@ export default class UserRepository extends BaseRepository {
         return await this.model.find({})
     }
 
+    /**
+     * Comprueba si existe el valor
+     * 
+     * @param value Value
+     * @returns 
+     */
+     exist(field: string, value: string){
+        return this.model.findOne({ [field]: { $regex: '.*' + value + '.*', $options: 'i' } })
+    }
+
 }
