@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { matchedData } from "express-validator";
 import TrackRepository from "../repositories/track.repository";
 import response from "../utils/responses-http";
+import session from "../utils/sessions";
 
 const trackRepository = new TrackRepository;
 
@@ -18,6 +19,8 @@ class TracksController {
      */
     async index(req: Request, res: Response): Promise<void>{
         const data = await trackRepository.paginate()
+        
+        console.log("Usuario en sesión: ", session.user.email)
 
         response.success(res, { data })
     }

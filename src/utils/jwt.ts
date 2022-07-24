@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken'
+import jwt, { JwtPayload } from 'jsonwebtoken'
 
 const JWT_SECRET = process.env['JWT_SECRET'] || 'empty'
 
@@ -26,10 +26,10 @@ export const tokenSign = async (user: any) => {
  * @param token token
  * @returns 
  */
-export const verifyToken = async (token: string) => {
+export const verifyToken = async (token: string) : Promise<string | JwtPayload | any> => {
     try {
        return jwt.verify(token, JWT_SECRET) 
     } catch (error) {
-       return Promise.reject(null)
+       return {}
     }
 }
